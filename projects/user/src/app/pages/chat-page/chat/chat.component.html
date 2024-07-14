@@ -1,0 +1,59 @@
+<div class="container">
+  <aside class="sidebar" #sidebar id="sidebar" [class.sidebarOpen]="isSidebarOpen" [class.sidebarClose]="!isSidebarOpen">
+    <div class="toggle-transition-box" [class.sidebarClose]="!isSidebarOpen">
+      <div class="sidebar-header">
+        <button class="sidebar-button" (click)="toggleSidebar()"><i class="fas fa-exchange-alt"></i></button>
+        <button class="sidebar-button" (click)="addNewChat()"><i class="fas fa-plus"></i></button>
+      </div>
+      <div class="chat-list-container">
+        <div class="chat-list">
+          <div class="chat-item" *ngFor="let chat of chats">{{ chat }}</div>
+        </div>
+      </div>
+      <div class="sidebar-footer">
+        底部區域
+      </div>
+    </div>
+
+  </aside>
+  <div class="main-content">
+    <div class="top-bar" [class.sidebarClose]="!isSidebarOpen">
+      <div class="top-bar-buttons" *ngIf="!isSidebarOpen">
+        <button class="sidebar-button" (click)="toggleSidebar()"><i class="fas fa-exchange-alt"></i></button>
+        <button class="sidebar-button" (click)="addNewChat()"><i class="fas fa-plus"></i></button>
+      </div>
+      <div class="dropdown" (click)="toggleUserMenu()">
+        <div class="user-avatar" #userAvatar id="user-avatar">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="dropdown-content" #userMenu id="user-menu">
+          <a href="#">首頁</a>
+          <a href="#">設定</a>
+          <a href="#">查看用量</a>
+          <a href="#">登入</a>
+        </div>
+      </div>
+    </div>
+    <div class="chat-container" [class.sidebarClose]="!isSidebarOpen">
+      <div class="chat-messages">
+        <div class="message" *ngFor="let message of messages" [ngClass]="{'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot'}">
+          <div class="avatar" *ngIf="message.sender === 'bot'">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="message-content">{{ message.text }}</div>
+        </div>
+      </div>
+      <div class="input-area">
+        <textarea
+                  placeholder="輸入您的訊息..."
+                  rows="1"
+                  id="user-input"
+                  [formControl]="userPromptText"
+                  (compositionstart)="onCompositionStart()"
+                  (compositionend)="onCompositionEnd()"
+                  (keydown)="onEnterPress($event)"></textarea>
+        <button id="send-button" (click)="sendMessage()">發送</button>
+      </div>
+    </div>
+  </div>
+</div>
