@@ -98,28 +98,32 @@ export class ChatComponent {
       const inputElement = event.target as HTMLTextAreaElement;
       event.preventDefault(); // 阻止預設的 enter 行為
 
-      if (!event.shiftKey && !this.isComposing) {
-        this.sendMessage();
+      // 排除正在進行選字
+      if (!this.isComposing) {
+        if (!event.shiftKey) {
+          // 按下enter，但沒有按住 Shift 鍵
+          this.sendMessage();                 // 送出訊息
 
-      } else {
-        // 處理 Shift+Enter，僅當輸入框高度小於 250px 時增加高度
-        const currentHeight = inputElement.offsetHeight;
-        const neededHeight = inputElement.scrollHeight;
+        } else {
+          // 處理 Shift+Enter，僅當輸入框高度小於 250px 時增加高度
+          const currentHeight = inputElement.offsetHeight;
+          const neededHeight = inputElement.scrollHeight;
 
-        if (neededHeight > currentHeight && currentHeight < 250) {
-          // 增加高度，但不超過 250px
-          inputElement.style.height = `${Math.min(neededHeight, 250)}px`;
+          if (neededHeight > currentHeight && currentHeight < 250) {
+            // 增加高度，但不超過 250px
+            inputElement.style.height = `${Math.min(neededHeight, 250)}px`;
+          };
+
+          // 在輸入框內容中插入換行符
+          const cursorPosition = inputElement.selectionStart;
+          const textBeforeCursor = inputElement.value.substring(0, cursorPosition);
+          const textAfterCursor = inputElement.value.substring(cursorPosition);
+          inputElement.value = textBeforeCursor + "\n" + textAfterCursor;
+
+          // 更新游標位置以放在插入的換行符後面
+          inputElement.selectionStart = cursorPosition + 1;
+          inputElement.selectionEnd = cursorPosition + 1;
         };
-
-        // 在輸入框內容中插入換行符
-        const cursorPosition = inputElement.selectionStart;
-        const textBeforeCursor = inputElement.value.substring(0, cursorPosition);
-        const textAfterCursor = inputElement.value.substring(cursorPosition);
-        inputElement.value = textBeforeCursor + "\n" + textAfterCursor;
-
-        // 更新游標位置以放在插入的換行符後面
-        inputElement.selectionStart = cursorPosition + 1;
-        inputElement.selectionEnd = cursorPosition + 1;
       };
     };
   }
