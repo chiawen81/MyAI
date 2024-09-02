@@ -1,22 +1,19 @@
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { Routes } from '@angular/router';
 import { ChatComponent } from './chat/chat.component';
 
 
-const chatRoutes: Routes = [
+export const chatRoutes: Routes = [
   {
-    path: '',
-    component: ChatComponent,
+    path: "",
     children: [
-      // 在這裡定義子路由，例如：
-      // { path: 'details', component: ChatDetailsComponent },
-      // { path: 'new', component: NewChatComponent },
-    ]
+      {
+        path: 'index',
+        loadComponent: () => import('../chat-page/chat/chat.component').then(m => m.ChatComponent),
+        data: {
+          component: ChatComponent,
+        }
+      }
+    ],
   }
 ];
 
-@NgModule({
-  imports: [RouterModule.forChild(chatRoutes)],
-  exports: [RouterModule]
-})
-export class ChatRoutingModule { }
