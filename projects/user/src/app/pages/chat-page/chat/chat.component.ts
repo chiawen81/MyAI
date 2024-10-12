@@ -4,6 +4,7 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ShikiService } from '../../../services/shiki.service';
 import { Highlighter } from 'shiki';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { ChatHistoryCahce, ChatSingleCoversation } from '../../../interfaces';
 
 @Component({
   selector: 'app-chat',
@@ -21,8 +22,8 @@ export class ChatComponent {
   @ViewChild('sidebar') sidebar!: ElementRef;
   // @ViewChild('textInput', { static: true }) textInputRef!: ElementRef; // 準備棄用====
 
-  chats: string[] = ['新對話'];
-  messages: { text: string, sender: string }[] = [];
+  myAIChatData: ChatHistoryCahce[] = [];                                      // 資料- 全
+  currentThreadData: ChatHistoryCahce | any = undefined;                      // 資料- 當前頁籤訊息
   isSidebarOpen: boolean = true;                                              // 左側欄
   userPromptText: FormControl = new FormControl("");                          // 輸入框
   isComposing: boolean = false;                                               // 輸入框- 是否正在選字
@@ -41,6 +42,15 @@ export class ChatComponent {
     this.highlighter = await this._shikiService.initShiki([this.defaultCodeBoardLanguaged], ["github-dark"]);
   }
 
+
+  ngAfterContentInit(): void {
+    // 取得前端暫存資料
+    // let data = localStorage.getItem("myAIChatHistory");
+    // data && (this.currentThreadData = JSON.parse(data));
+    this.myAIChatData = this.fakeMyAIChatHistoryCahce;
+    this._changeDetectorRef.detectChanges();
+  }
+
   ngAfterViewChecked(): void {
     console.log('ngAfterViewChecked');
 
@@ -48,13 +58,22 @@ export class ChatComponent {
     this.copyCodeBoardEventListener();
   }
 
+  // 資料- 產生新對話流水號
+  generateNewUUID(): string {
+    return crypto.randomUUID();
+  }
+
+  // 內容- 檢視指定頁籤歷史訊息
+  checkHistoryThread(data: ChatHistoryCahce) {
+    this.currentThreadData = data;
+  }
 
 
   // ———————————————————— 左側欄 ————————————————————
   // 新增對話
   addNewChat(): void {
     console.log('addNewChat');
-    this.chats.push(`新對話 ${this.chats.length + 1}`);
+    this.currentThreadData = null;// 清空當前視窗訊息
   }
 
   // 切換左側欄
@@ -97,23 +116,56 @@ export class ChatComponent {
   // 送出訊息
   sendMessage(): void {
     const message = this.userPromptText.value;
+    let chatHistoryCahce: ChatHistoryCahce;
+    let questionMsgContent: ChatSingleCoversation;
     console.log('sendMessage', message);
 
     if (message) {
       console.log('has message', message);
-      this.messages.push({ text: message, sender: 'user' });
+      questionMsgContent = { content: message, sender: 'user' }
+      this.currentThreadData!.msgContents.push(questionMsgContent);       // 更新當前視窗資料
       this.userPromptText.setValue("");
+
 
       // 模擬API回應
       setTimeout(async () => {
-        const managedChatApiRes = await this.processChatApiRes(this.exampleApiResText);
+        const managedChatApiRes = await this.processChatApiRes(this.fakeApiRes.exampleApiResText);
+        let answerMsgContent: ChatSingleCoversation = { content: managedChatApiRes, sender: 'bot' };
         console.log('highlightedResponse', managedChatApiRes);
-        this.messages.push({ text: managedChatApiRes, sender: 'bot' });
+        this.currentThreadData!.msgContents.push(answerMsgContent);       // 更新當前視窗資料
+
+        // 存到暫存
+        this.saveToCahce(this.fakeApiRes, [questionMsgContent, answerMsgContent]);
+
         this._changeDetectorRef.detectChanges();
       }, 500);
     };
   }
 
+
+  // 資料- 存到暫存
+  saveToCahce(fakeApiRes: any, msgContent: ChatSingleCoversation[]) {
+    if (this.currentThreadData?.threadId) {
+      // 舊對話
+      // 非新對話
+      // 1. 找出uuid
+      // 2. 儲存資料
+
+    } else {
+      // 新對話
+      let threadData: ChatHistoryCahce = {
+        threadId: this.generateNewUUID(),
+        tabSortIdx: 0,// ====再修改
+        title: fakeApiRes.title,// ====再修改
+        msgContents: msgContent,
+        createTime: new Date().toDateString(),
+        lastUpdateTime: new Date().toDateString()
+      };
+
+      this.myAIChatData.push(threadData);
+      this._changeDetectorRef.detectChanges();
+    };
+  }
 
 
   // 輸入框- 按下Enter
@@ -277,9 +329,39 @@ export class ChatComponent {
     });
   }
 
+  fakeMyAIChatHistoryCahce: ChatHistoryCahce[] = [
+    {
+      threadId: "1001",
+      tabSortIdx: 0,
+      title: "對話串1",
+      msgContents: [
+        { content: "嗨1", sender: "user" },
+        { content: "gpt回應1", sender: "bot" },
+        { content: "嗨2", sender: "user" },
+        { content: "gpt回應2", sender: "bot" },
+      ],
+      createTime: "2024/10/09",
+      lastUpdateTime: "2024/10/11"
+    }, {
+      threadId: "1002",
+      tabSortIdx: 1,
+      title: "對話串2",
+      msgContents: [
+        { content: "科科1", sender: "user" },
+        { content: "gpt回應1", sender: "bot" },
+        { content: "顆顆2", sender: "user" },
+        { content: "gpt回應2", sender: "bot" },
+      ],
+      createTime: "2024/10/09",
+      lastUpdateTime: "2024/10/11"
+    }
+  ];
 
 
-  exampleApiResText = "在Angular中，依賴注入（Dependency Injection，簡稱DI）是一個核心概念，用於提供或\"注入\"組件和服務之間的依賴關係。Angular的依賴注入系統會為你提供所需的依賴項，例如服務或其他類別。\n\n要使用Angular的依賴注入系統，你通常會經歷以下步驟：\n\n1. **定義一個服務（Service）**：首先，建立一個服務類別，該類別包含你想要在應用程序中的其他部分使用的方法和屬性。\n\n```typescript\nimport { Injectable } from '@angular/core';\n\n@Injectable({\n  providedIn: 'root' // 這個服務是全域單例\n})\nexport class MyService {\n  constructor() {}\n\n  doSomething() {\n    // 這裡是你的邏輯\n  }\n}\n```\n\n2. **注入服務到組件（Component）或其他服務中**：在組件或其他服務的建構函數中，通過參數列表來注入先前定義的服務。\n\n```typescript\nimport { Component } from '@angular/core';\nimport { MyService } from './my.service';\n\n@Component({\n  selector: 'app-my-component',\n  templateUrl: './my-component.component.html',\n  styleUrls: ['./my-component.component.css']\n})\nexport class MyComponent {\n  // MyService 會被Angular DI系統自動注入到這個組件中\n  constructor(private myService: MyService) {}\n\n  useService() {\n    // 使用注入的服務\n    this.myService.doSomething();\n  }\n}\n```\n\n在上面的程式碼中，`MyService` 是透過 `MyComponent` 的建構函數注入的。Angular會自動創建`MyService`的實例（如果尚未創建），並將其作為參數傳遞給組件的建構函數。\n\n這樣，你就可以在組件中使用`myService`實例來調用`doSomething`方法或其他方法。\n\n請注意，為了讓服務可以被注入，你必須在Angular模組中註冊它。在上面`@Injectable()`裝飾器中使用`providedIn: 'root'`，表示該服務是全局單例，它會自動註冊到根注入器中，這意味著你不需要在任何NgModule的`providers`陣列中再次註冊它。如果你希望將服務限制在特定模組或組件中使用，則可以在相應的NgModule或@Component的`providers`陣列中註冊該服務。\n\n這就是Angular依賴注入系統的基本用法。透過這種方式，Angular幫助我們保持組件和服務之間的解耦，並提高了代碼的可測試性和可維護性。";
+  fakeApiRes = {
+    title: "假資料標題",
+    exampleApiResText: "在Angular中，依賴注入（Dependency Injection，簡稱DI）是一個核心概念，用於提供或\"注入\"組件和服務之間的依賴關係。Angular的依賴注入系統會為你提供所需的依賴項，例如服務或其他類別。\n\n要使用Angular的依賴注入系統，你通常會經歷以下步驟：\n\n1. **定義一個服務（Service）**：首先，建立一個服務類別，該類別包含你想要在應用程序中的其他部分使用的方法和屬性。\n\n```typescript\nimport { Injectable } from '@angular/core';\n\n@Injectable({\n  providedIn: 'root' // 這個服務是全域單例\n})\nexport class MyService {\n  constructor() {}\n\n  doSomething() {\n    // 這裡是你的邏輯\n  }\n}\n```\n\n2. **注入服務到組件（Component）或其他服務中**：在組件或其他服務的建構函數中，通過參數列表來注入先前定義的服務。\n\n```typescript\nimport { Component } from '@angular/core';\nimport { MyService } from './my.service';\n\n@Component({\n  selector: 'app-my-component',\n  templateUrl: './my-component.component.html',\n  styleUrls: ['./my-component.component.css']\n})\nexport class MyComponent {\n  // MyService 會被Angular DI系統自動注入到這個組件中\n  constructor(private myService: MyService) {}\n\n  useService() {\n    // 使用注入的服務\n    this.myService.doSomething();\n  }\n}\n```\n\n在上面的程式碼中，`MyService` 是透過 `MyComponent` 的建構函數注入的。Angular會自動創建`MyService`的實例（如果尚未創建），並將其作為參數傳遞給組件的建構函數。\n\n這樣，你就可以在組件中使用`myService`實例來調用`doSomething`方法或其他方法。\n\n請注意，為了讓服務可以被注入，你必須在Angular模組中註冊它。在上面`@Injectable()`裝飾器中使用`providedIn: 'root'`，表示該服務是全局單例，它會自動註冊到根注入器中，這意味著你不需要在任何NgModule的`providers`陣列中再次註冊它。如果你希望將服務限制在特定模組或組件中使用，則可以在相應的NgModule或@Component的`providers`陣列中註冊該服務。\n\n這就是Angular依賴注入系統的基本用法。透過這種方式，Angular幫助我們保持組件和服務之間的解耦，並提高了代碼的可測試性和可維護性。"
+  };
 
 
 

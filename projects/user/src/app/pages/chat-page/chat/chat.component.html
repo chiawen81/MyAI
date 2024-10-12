@@ -7,7 +7,7 @@
       </div>
       <div class="chat-list-container">
         <div class="chat-list">
-          <div class="chat-item" *ngFor="let chat of chats">{{ chat }}</div>
+          <div class="chat-item" *ngFor="let thread of myAIChatData" (click)="checkHistoryThread(thread)">{{ thread.title }}</div>
         </div>
       </div>
       <div class="sidebar-footer">
@@ -36,12 +36,15 @@
     </div>
     <div class="chat-container" [class.sidebarClose]="!isSidebarOpen">
       <div class="chat-messages">
-        <div class="message" *ngFor="let message of messages" [ngClass]="{'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot'}">
+        @if(currentThreadData?.msgContents?.length){
+        <div class="message" *ngFor="let message of currentThreadData!.msgContents" [ngClass]="{'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot'}">
           <div class="avatar" *ngIf="message.sender === 'bot'">
             <i class="fas fa-robot"></i>
           </div>
-          <div class="message-content" [innerHTML]="getSanitizedHtml(message.text)"></div>
+          <div class="message-content" [innerHTML]="getSanitizedHtml(message.content)"></div>
         </div>
+        }
+
       </div>
       <div class="input-area">
         <textarea
