@@ -195,6 +195,41 @@ body {
           .message-content {
             padding: 10px;
             border-radius: 5px;
+
+            ::ng-deep {
+
+              //————— 程式碼版:標頭 —————
+              .code-block-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 10px;
+                border-radius: 5px 5px 0 0;
+                background-color: #434343;
+                color: #a7a7a7;
+                font-size: 0.875rem;
+                padding: 0.5rem;
+                text-align: left;
+
+                .code-language-label {
+                  font-size: 0.875rem;
+                }
+
+                .copy-text {
+                  cursor: pointer;
+                }
+              }
+
+              // ————— 程式碼版:高亮語法 —————
+              pre {
+                margin-top: 0px;
+              }
+
+              pre.shiki.github-dark {
+                padding: 20px;
+                border-radius: 0 0 5px 5px;
+              }
+            }
           }
 
           &.user-message {

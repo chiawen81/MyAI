@@ -40,7 +40,7 @@
           <div class="avatar" *ngIf="message.sender === 'bot'">
             <i class="fas fa-robot"></i>
           </div>
-          <div class="message-content">{{ message.text }}</div>
+          <div class="message-content" [innerHTML]="getSanitizedHtml(message.text)"></div>
         </div>
       </div>
       <div class="input-area">
