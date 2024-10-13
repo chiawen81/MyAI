@@ -5,13 +5,16 @@ import { ShikiService } from '../../../services/shiki.service';
 import { Highlighter } from 'shiki';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ChatHistoryCahce, ChatSingleCoversation } from '../../../interfaces';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog } from '@angular/material/dialog';
+import { BlockUiDialogComponent } from '../../../common-component/ui-bolck/block-ui-dialog.component';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, FormsModule
-
+    CommonModule, ReactiveFormsModule, FormsModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss',
@@ -33,6 +36,7 @@ export class ChatComponent {
   constructor(
     private _shikiService: ShikiService,
     private sanitizer: DomSanitizer,
+    private dialog: MatDialog,
     private _changeDetectorRef: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) { }
@@ -40,6 +44,15 @@ export class ChatComponent {
   async ngOnInit(): Promise<void> {
     // 程式碼版- 高亮語法的初始設定
     this.highlighter = await this._shikiService.initShiki([this.defaultCodeBoardLanguaged], ["github-dark"]);
+
+    // 顯示 UI block
+    const dialogRef = this.dialog.open(BlockUiDialogComponent, {
+      disableClose: true, // 禁止用戶關閉
+      panelClass: 'block-ui-dialog' // 使用自定義樣式
+    });
+
+    // // 關閉  UI block
+    // dialogRef.close(); // 成功後關閉 UI Block
   }
 
 
