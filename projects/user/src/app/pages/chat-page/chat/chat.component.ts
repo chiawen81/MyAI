@@ -7,7 +7,9 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ChatHistoryCahce, ChatSingleCoversation } from '../../../interfaces';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog } from '@angular/material/dialog';
-import { BlockUiDialogComponent } from '../../../common-component/ui-bolck/block-ui-dialog.component';
+import { BlockUiDialogComponent } from '../../../common-component/bolck-ui/block-ui-dialog.component';
+import { GptService } from '../../../services/gpt.service';
+import { UiBlockService } from '../../../services/block-ui.service';
 
 @Component({
   selector: 'app-chat',
@@ -35,21 +37,26 @@ export class ChatComponent {
 
   constructor(
     private _shikiService: ShikiService,
-    private sanitizer: DomSanitizer,
-    private dialog: MatDialog,
+    private _gptService: GptService,
+    private _sanitizer: DomSanitizer,
+    private _dialog: MatDialog,
+    private _uiBlockService: UiBlockService,
     private _changeDetectorRef: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
   async ngOnInit(): Promise<void> {
     // 程式碼版- 高亮語法的初始設定
-    this.highlighter = await this._shikiService.initShiki([this.defaultCodeBoardLanguaged], ["github-dark"]);
+    this.highlighter = await this._shikiService.initShiki(
+      [this.defaultCodeBoardLanguaged, 'bash', 'html', 'css', 'javascript'],
+      ["github-dark"]
+    );
 
-    // 顯示 UI block
-    const dialogRef = this.dialog.open(BlockUiDialogComponent, {
-      disableClose: true, // 禁止用戶關閉
-      panelClass: 'block-ui-dialog' // 使用自定義樣式
-    });
+    // // 顯示 UI block
+    // const dialogRef = this.dialog.open(BlockUiDialogComponent, {
+    //   disableClose: true, // 禁止用戶關閉
+    //   panelClass: 'block-ui-dialog' // 使用自定義樣式
+    // });
 
     // // 關閉  UI block
     // dialogRef.close(); // 成功後關閉 UI Block
@@ -129,55 +136,44 @@ export class ChatComponent {
   // 送出訊息
   sendMessage(): void {
     const message = this.userPromptText.value;
-    let chatHistoryCahce: ChatHistoryCahce;
     let questionMsgContent: ChatSingleCoversation;
-    console.log('sendMessage', message);
 
     if (message) {
-      console.log('has message', message);
-      questionMsgContent = { content: message, sender: 'user' }
-      this.currentThreadData!.msgContents.push(questionMsgContent);       // 更新當前視窗資料
+      questionMsgContent = { role: 'user', content: message }
+
+      // 更新當前視窗畫面、資料
+      this.currentThreadData!.msgContents.push(questionMsgContent);
       this.userPromptText.setValue("");
 
-
-      // 模擬API回應
-      setTimeout(async () => {
-        const managedChatApiRes = await this.processChatApiRes(this.fakeApiRes.exampleApiResText);
-        let answerMsgContent: ChatSingleCoversation = { content: managedChatApiRes, sender: 'bot' };
-        console.log('highlightedResponse', managedChatApiRes);
-        this.currentThreadData!.msgContents.push(answerMsgContent);       // 更新當前視窗資料
-
-        // 存到暫存
-        this.saveToCahce(this.fakeApiRes, [questionMsgContent, answerMsgContent]);
-
-        this._changeDetectorRef.detectChanges();
-      }, 500);
+      // call API拿訊息
+      this.getGptAnswer(this.currentThreadData.msgContents, questionMsgContent);
     };
   }
 
 
   // 資料- 存到暫存
   saveToCahce(fakeApiRes: any, msgContent: ChatSingleCoversation[]) {
-    if (this.currentThreadData?.threadId) {
-      // 舊對話
-      // 非新對話
-      // 1. 找出uuid
-      // 2. 儲存資料
+    console.log('saveToCahce 存到暫存');
+    // if (this.currentThreadData?.threadId) {
+    //   // 舊對話
+    //   // 非新對話
+    //   // 1. 找出uuid
+    //   // 2. 儲存資料
 
-    } else {
-      // 新對話
-      let threadData: ChatHistoryCahce = {
-        threadId: this.generateNewUUID(),
-        tabSortIdx: 0,// ====再修改
-        title: fakeApiRes.title,// ====再修改
-        msgContents: msgContent,
-        createTime: new Date().toDateString(),
-        lastUpdateTime: new Date().toDateString()
-      };
+    // } else {
+    //   // 新對話
+    //   let threadData: ChatHistoryCahce = {
+    //     threadId: this.generateNewUUID(),
+    //     tabSortIdx: 0,// ====再修改
+    //     title: fakeApiRes.title,// ====再修改
+    //     msgContents: msgContent,
+    //     createTime: new Date().toDateString(),
+    //     lastUpdateTime: new Date().toDateString()
+    //   };
 
-      this.myAIChatData.push(threadData);
-      this._changeDetectorRef.detectChanges();
-    };
+    //   this.myAIChatData.push(threadData);
+    //   this._changeDetectorRef.detectChanges();
+    // };
   }
 
 
@@ -293,7 +289,7 @@ export class ChatComponent {
 
   // 程式版- 注入處力過的Html (繞過Angular保護機制)
   getSanitizedHtml(highlightedCode: string): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(highlightedCode);
+    return this._sanitizer.bypassSecurityTrustHtml(highlightedCode);
   }
 
 
@@ -342,16 +338,51 @@ export class ChatComponent {
     });
   }
 
+
+
+
+
+  // ———————————————————— API ————————————————————
+  getGptAnswer(
+    passMsgContent: ChatSingleCoversation[],
+    questionMsgContent: ChatSingleCoversation
+  ): void {
+    const para = [...passMsgContent, questionMsgContent];
+
+    this._uiBlockService.addBlockUI();
+    this._gptService.getGptAnswer(para).subscribe(async res => {
+      console.log('getGptAnswer', res);
+
+      const managedChatApiRes = await this.processChatApiRes(res.choices[res.choices.length - 1].message.content);
+      const answerMsgContent: ChatSingleCoversation = {
+        role: 'system',
+        content: managedChatApiRes
+      };
+      console.log('highlightedResponse', managedChatApiRes);
+
+      // 更新當前視窗畫面、資料
+      this.currentThreadData!.msgContents.push(answerMsgContent);
+
+      // 存到暫存
+      this.saveToCahce(res, [questionMsgContent, answerMsgContent]);
+
+      this._changeDetectorRef.detectChanges();
+      this._uiBlockService.removeBlockUI();
+    });
+  }
+
+
+
   fakeMyAIChatHistoryCahce: ChatHistoryCahce[] = [
     {
       threadId: "1001",
       tabSortIdx: 0,
       title: "對話串1",
       msgContents: [
-        { content: "嗨1", sender: "user" },
-        { content: "gpt回應1", sender: "bot" },
-        { content: "嗨2", sender: "user" },
-        { content: "gpt回應2", sender: "bot" },
+        { content: "請問你聽過angular嗎？", role: "user" },
+        { content: "angular是一個重要的框架", role: "system" },
+        // { content: "嗨2", role: "user" },
+        // { content: "gpt回應2", role: "system" },
       ],
       createTime: "2024/10/09",
       lastUpdateTime: "2024/10/11"
@@ -360,10 +391,10 @@ export class ChatComponent {
       tabSortIdx: 1,
       title: "對話串2",
       msgContents: [
-        { content: "科科1", sender: "user" },
-        { content: "gpt回應1", sender: "bot" },
-        { content: "顆顆2", sender: "user" },
-        { content: "gpt回應2", sender: "bot" },
+        { content: "科科1", role: "user" },
+        { content: "gpt回應1", role: "system" },
+        { content: "顆顆2", role: "user" },
+        { content: "gpt回應2", role: "system" },
       ],
       createTime: "2024/10/09",
       lastUpdateTime: "2024/10/11"

@@ -37,8 +37,8 @@
     <div class="chat-container" [class.sidebarClose]="!isSidebarOpen">
       <div class="chat-messages">
         @if(currentThreadData?.msgContents?.length){
-        <div class="message" *ngFor="let message of currentThreadData!.msgContents" [ngClass]="{'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot'}">
-          <div class="avatar" *ngIf="message.sender === 'bot'">
+        <div class="message" *ngFor="let message of currentThreadData!.msgContents" [ngClass]="{'user-message': message.role === 'user', 'system-message': message.role === 'system'}">
+          <div class="avatar" *ngIf="message.role === 'system'">
             <i class="fas fa-robot"></i>
           </div>
           <div class="message-content" [innerHTML]="getSanitizedHtml(message.content)"></div>
