@@ -1,0 +1,1 @@
+import{a as t}from"./chunk-P6LZ3KKQ.js";import"./chunk-C727CJB6.js";import"./chunk-4CLCTAJ7.js";var e=[{path:"",children:[{path:"index",loadComponent:()=>import("./chunk-WIHTGUKI.js").then(o=>o.ChatComponent),data:{component:t}}]}];export{e as chatRoutes};
