@@ -16,12 +16,12 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:application",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "deployUrl": "/MyAI/user/",
             "outputPath": "dist/MyAI/user",
             "index": "projects/user/src/index.html",
-            "browser": "projects/user/src/main.ts",
+            "main": "projects/user/src/main.ts",
             "polyfills": [
               "zone.js"
             ],
