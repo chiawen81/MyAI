@@ -1,4 +1,4 @@
-// —————————— 共用 ——————————
+// ———————————————————— 共用 ————————————————————
 // 全域
 html,
 body {
@@ -18,7 +18,7 @@ body {
 
 
 
-// —————————— 本頁 ——————————
+// ———————————————————— 本頁 ————————————————————
 .container {
   width: 100vw;
   height: 100vh;
@@ -66,6 +66,9 @@ body {
           padding: 10px;
 
           .chat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             padding: 5px;
             cursor: pointer;
           }
@@ -95,12 +98,13 @@ body {
     // ————— 置頂欄 —————
     .top-bar {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
+      align-items: center;
       padding: 10px;
       background-color: #f8f8f8;
 
       &.sidebarClose {
-        justify-content: space-between;
+        // justify-content: flex-end;
       }
 
       .dropdown {
@@ -297,4 +301,15 @@ body {
       }
     }
   }
+}
+
+
+
+// ———————————————————— utility ————————————————————
+.cursor {
+  cursor: pointer;
+}
+
+.m-l-10 {
+  margin-left: 10px;
 }

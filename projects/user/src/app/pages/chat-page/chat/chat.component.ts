@@ -29,6 +29,8 @@ export class ChatComponent {
   myAIChatData: ChatHistoryCahce[] = [];                                      // 資料- 全
   currentThreadData: ChatHistoryCahce | any = undefined;                      // 資料- 當前頁籤訊息
   isSidebarOpen: boolean = true;                                              // 左側欄
+  newTitle = new FormControl("");                                             // 置頂橫幅- 標題名
+  isOpenRenameTitle: boolean = false;                                         // 置頂橫幅- 換標題
   userPromptText: FormControl = new FormControl("");                          // 輸入框
   isComposing: boolean = false;                                               // 輸入框- 是否正在選字
   highlighter!: Highlighter;                                                  // 程式碼版- 高亮初始設定
@@ -91,9 +93,43 @@ export class ChatComponent {
 
 
 
-  // 左側欄- 檢視指定頁籤歷史訊息
-  checkHistoryThread(data: ChatHistoryCahce) {
+  // 左側欄- 檢視單筆頁籤
+  checkHistoryThread(data: ChatHistoryCahce): void {
     this.currentThreadData = data;
+  }
+
+
+
+  // 左側欄- 刪除單筆頁籤
+  deleteThread(data: ChatHistoryCahce): void {
+    console.log('刪除單筆頁籤');
+
+    // 當前要面是不是要刪的訊息
+    if (data.threadId === this.currentThreadData.threadId) {
+      // 清空當前視窗訊息
+      this.currentThreadData = this.createCurrentThreadDafaultData();
+
+      // 更新資料- 畫面、暫存
+      this.updateDeleteData(data);
+
+    } else {
+      // 更新資料- 畫面、暫存
+      this.updateDeleteData(data);
+    };
+
+    this._changeDetectorRef.detectChanges();
+  }
+
+
+
+  // 左側欄- 刪除單筆頁籤（更新資料）
+  updateDeleteData(targetThreadData: ChatHistoryCahce): void {
+    // 更新畫面資料
+    const targetIdx = this.myAIChatData.findIndex(val => val.threadId === targetThreadData.threadId);
+    this.myAIChatData.splice(targetIdx, 1);
+
+    // 更新暫存資料
+    localStorage.setItem("myAIChatData", JSON.stringify(this.myAIChatData));
   }
 
 
@@ -120,6 +156,34 @@ export class ChatComponent {
         }
       }
     }
+  }
+
+
+
+  // 置頂橫幅- 重新命名頁籤名稱
+  renameTitle(): void {
+    this.isOpenRenameTitle = true;
+    this.newTitle.setValue(this.currentThreadData.title);
+  }
+
+
+
+  // 置頂橫幅- 重新命名頁籤名稱
+  createNewTitle(newTitle: string): void {
+    if (newTitle && (newTitle !== this.currentThreadData.title)) {
+      // 更新當前頁籤
+      this.currentThreadData.title = newTitle;
+
+      // 更新畫面資料
+      const targetIdx = this.myAIChatData.findIndex(val => val.threadId === this.currentThreadData.threadId)
+      this.myAIChatData[targetIdx].title = newTitle;
+
+      // 更新暫存資料
+      localStorage.setItem("myAIChatData", JSON.stringify(this.myAIChatData));
+      this.newTitle.setValue("");
+    };
+
+    this.isOpenRenameTitle = false;
   }
 
 
