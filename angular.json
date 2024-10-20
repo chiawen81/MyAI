@@ -18,7 +18,8 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/user",
+            "deployUrl": "/MyAI/user/",
+            "outputPath": "dist/MyAI/user",
             "index": "projects/user/src/index.html",
             "browser": "projects/user/src/main.ts",
             "polyfills": [

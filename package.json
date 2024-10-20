@@ -1,6 +1,6 @@
 {
   "name": "my-ai",
-  "version": "0.0.0",
+  "version": "0.0.6",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -8,7 +8,13 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:MyAI": "node dist/my-ai/server/server.mjs",
-    "serve:ssr:user": "node dist/user/server/server.mjs"
+    "serve:ssr:user": "node dist/user/server/server.mjs",
+    "build:user": "ng build user --base-href /MyAI/user/ --configuration production --output-hashing=all",
+    "deploy": "npx angular-cli-ghpages --dir=dist/MyAI/user/browser",
+    "move-404": "node postbuild.js",
+    "patchVersion": "npm --no-git-tag-version version patch",
+    "build:user2": "npm run patchVersion && npm run build:user && npm run move-404",
+    "deploy2": "npx angular-cli-ghpages --dir=dist/MyAI"
   },
   "private": true,
   "dependencies": {
