@@ -36,12 +36,7 @@
               "@angular/material/prebuilt-themes/cyan-orange.css",
               "projects/user/src/styles.scss"
             ],
-            "scripts": [],
-            "server": "projects/user/src/main.server.ts",
-            "prerender": true,
-            "ssr": {
-              "entry": "projects/user/server.ts"
-            }
+            "scripts": []
           },
           "configurations": {
             "production": {
