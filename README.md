@@ -20,7 +20,7 @@
    - `key`：`myAI_OpenAI_ApiKey`
    - `value`：`放你自己的 API Key`
   
-<br><br><br>
+<br><br>
 ---
 # MyAI Introduction
 **MyAI** is a simplified version of ChatGPT, built to replicate its functionalities with a focus on delivering the most accurate answers at minimal cost, aiming to enhance work efficiency. Future development will follow this principle, prioritizing improvements to make MyAI even better!<br><br>
