@@ -1,6 +1,6 @@
 {
   "name": "my-ai",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -9,12 +9,12 @@
     "test": "ng test",
     "serve:ssr:MyAI": "node dist/my-ai/server/server.mjs",
     "serve:ssr:user": "node dist/user/server/server.mjs",
-    "build:user": "ng build user --base-href /MyAI/user/ --configuration production",
-    "deploy": "npx angular-cli-ghpages --dir=dist/MyAI/user",
-    "move-404": "node postbuild.js",
-    "patchVersion": "npm --no-git-tag-version version patch",
-    "build:user2": "npm run patchVersion && ng build user --base-href /MyAI/user/ --configuration production --output-hashing=all && npm run move-404",
-    "deploy2": "npx angular-cli-ghpages --dir=dist/MyAI"
+    "predeploy": "npm run patchVersion && npm run build:user && npm run copyRequiredFilesForDist",
+    "deploy": "npm run setDirectionForGithubPages",
+    "build:user": "ng build user --configuration=production",
+    "copyRequiredFilesForDist": "cp 404.html dist && touch dist/user/.nojekyll",
+    "setDirectionForGithubPages": "ngh --dir=dist --repo=https://github.com/chiawen81/MyAI.git",
+    "patchVersion": "npm --no-git-tag-version version patch"
   },
   "private": true,
   "dependencies": {
@@ -30,6 +30,7 @@
     "@angular/platform-server": "^18.2.8",
     "@angular/router": "^18.2.8",
     "@angular/ssr": "^18.2.9",
+    "angular-cli-ghpages": "^2.0.3",
     "express": "^4.18.2",
     "git-filter-repo": "^0.0.30",
     "rxjs": "~7.8.0",

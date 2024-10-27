@@ -3,25 +3,28 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>404</title>
+  <title>Single Page Apps for GitHub Pages</title>
   <script>
+    // ============= 倒轉SPA路由 ============
     (function () {
+      console.log(location);
       sessionStorage.redirect = location.href;
-      var redirectTo = "/user/";
-      var title = "chatDeploy";
+      var redirectTo = "/MyAI/user/";
 
       if (location.pathname.startsWith("/user/")) {
-        redirectTo = "/user/";
-        title = "chatDeploy";
+        redirectTo = "/MyAI/user/";
       };
 
-      document.title = title;
       location.replace(redirectTo);
     })();
   </script>
-  <meta http-equiv="refresh" content="" />
-</head>
 
-<body></body>
+<body>
+  <div id="not-found-content" style="display: none">
+    <h1>404</h1>
+    <p>此頁面不存在。請選擇以下應用：</p>
+    <ul id="app-list"></ul>
+  </div>
+</body>
 
 </html>
