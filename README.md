@@ -3,7 +3,7 @@
 👉 立即使用 [MyAI線上版](https://chiawen81.github.io/MyAI/user/chat/index)
 
 ## 適合對象
-- 不想每個月訂閱 ChatGPT Pro，但又希望使用 **最新的模型** 處理 **複雜任務** 、得到 **高精準度** 的答案
+- 不想訂閱 ChatGPT Pro，但又希望使用**最新的模型**處理**複雜任務**、得到**高精準度**的答案
 - 擁有 OpenAI 的 API 金鑰（申請辦法 [請點此](https://labs.botsnova.com/2024/07/19/openai-api-key/)）
 
 ## 現有功能
@@ -20,25 +20,26 @@
    - `key`：`myAI_OpenAI_ApiKey`
    - `value`：`放你自己的 API Key`
   
+<br><br><br>
 ---
 # MyAI Introduction
-**MyAI** is a simplified version of ChatGPT, built to replicate its functionalities.
-- Use it directly without downloading any code: [MyAI Online Version](https://chiawen81.github.io/MyAI/user/chat/index)
+**MyAI** is a simplified version of ChatGPT, built to replicate its functionalities with a focus on delivering the most accurate answers at minimal cost, aiming to enhance work efficiency. Future development will follow this principle, prioritizing improvements to make MyAI even better!<br><br>
+👉 Start using [MyAI Online Version](https://chiawen81.github.io/MyAI/user/chat/index)
 
 ## Target Audience
-- Those who prefer not to subscribe to ChatGPT Pro but want to use the latest model
+- Users who prefer not to subscribe to ChatGPT Pro but want **the latest model** to handle **complex tasks** and obtain **highly accurate** answers
 - Users with an OpenAI API Key ([Click here to apply](https://labs.botsnova.com/2024/07/19/openai-api-key/))
 
 ## Current Features
-✅ Model used: `GPT4o` <br>
-✅ Max token limit: `3000` <br>
-✅ Basic chat functionality <br>
-❌ Image generation <br>
-❌ File upload
+ ✅ Model used: `GPT4o` <br>
+ ✅ Max token limit: `3000` <br>
+ ✅ Basic chat functionality <br>
+ ✅ View chat history ※ Currently stored on personal device; please clear cache or delete messages periodically <br>
+ ❌ Image generation <br>
+ ❌ File upload <br>
 
 ## Initial Setup
-1. Open **Console** > **Application** > **localStorage**
+1. Open **Developer Tools (F12)** > **Application** > **localStorage**
 2. Set the following values:
    - `key`: `myAI_OpenAI_ApiKey`
    - `value`: `your own API Key`
-
