@@ -190,7 +190,7 @@ export class ChatComponent {
 
 
 
-  // ———————————————————————————— 程式版 ————————————————————————————
+  // ———————————————————————————— 對話串 ————————————————————————————
   // 程式版- 挑出程式碼段落處理
   async processChatApiRes(ApiRes: string): Promise<string> {
     const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;       // 正則：全段內容、所用語言、程式碼段落
@@ -302,6 +302,49 @@ export class ChatComponent {
 
 
 
+  // 排版- 整理排版
+  formatResponse(gptResponse: string): string {
+    // 暫時將所有以三個反引號包圍的程式碼區塊替換為佔位符
+    const codeBlocks: string[] = [];
+    const tempContent = gptResponse.replace(/```([\s\S]*?)```/g, (match) => {
+      codeBlocks.push(match);  // 保留原始的 Markdown 格式
+      return `<!-- CODE_BLOCK_${codeBlocks.length - 1} -->`;
+    });
+
+    console.log('codeBlocks:', codeBlocks);
+
+    // 執行其他格式替換（不影響程式碼區塊）
+    let formattedContent = JSON.parse(JSON.stringify(tempContent))
+      .replace(/`(.*?)`/g, '<code class="innerHTML-code-inline-text">$1</code>') // 行內程式碼
+      .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // 加粗文字，比對目標：**
+      .replace(/(?<!<code[^>]*?>)(?<!<pre[^>]*?>)\*(.*?)\*(?!<\/code>|<\/pre>)/g, '<i>$1</i>')
+      // .replace(/(?<!CODE_BLOCK_\d)_([^_]+)_/g, '<i>$1</i>') // 斜體 (底線) - 排除佔位符
+      .replace(/~~(.*?)~~/g, '<s>$1</s>') // 刪除線
+      .replace(/#### (.*?)\n/g, '<h4 class="innerHTML-h4">$1</h4>') // h4 標題
+      .replace(/### (.*?)\n/g, '<h3 class="innerHTML-h3">$1</h3>') // h3 標題
+      .replace(/## (.*?)\n/g, '<h2 class="innerHTML-h2">$1</h2>') // h2 標題
+      .replace(/# (.*?)\n/g, '<h1 class="innerHTML-h1">$1</h1>') // h1 標題
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2">$1</a>') // 超連結
+      .replace(/^- (.*?)$/gm, '<ul class="innerHTML-list"><li>$1</li></ul>') // 無序列表
+      .replace(/^\d+\.\s+(.*?)(?=\n|$)/gm, '<p class="ordered-list-item">$&</p>');// 有序列表的小標加margin-top
+    // .replace(/(?<!<code|<pre>)\n/g, '<br />') // 只替換非程式碼區塊的換行
+    // .replace(/(.+?)(?=\n|$)/g, '<p>$1</p>'); // 段落分隔
+
+    console.log('formattedContent', formattedContent);
+    console.log('比對', formattedContent.includes('<!-- CODE_BLOCK_0 -->'));
+
+    // 將程式碼區塊還原為原始 Markdown 字串
+    codeBlocks.forEach((block, index) => {
+      formattedContent = formattedContent.replace(`<!-- CODE_BLOCK_${index} -->`, block);
+    });
+
+    return formattedContent;
+  }
+
+
+
+
+
 
 
   // ———————————————————————————— 輸入框 ————————————————————————————
@@ -396,7 +439,7 @@ export class ChatComponent {
 
 
   // 資料- 存到暫存
-  saveToCahce(apiRes: any, queAndAnsMsgContent: ChatSingleCoversation[]) {
+  saveToCahce(creatTimestamp: number, queAndAnsMsgContent: ChatSingleCoversation[]) {
     console.log('saveToCahce 存到暫存');
     if (this.currentThreadData.threadId) {
       // ———————————————— 舊對話 ————————————————
@@ -407,7 +450,7 @@ export class ChatComponent {
           const updataSingleThreadData: ChatHistoryCahce = {
             ...conversation,
             msgContents: [...conversation.msgContents, ...queAndAnsMsgContent], // 加入新的訊息
-            lastUpdateTime: this.generateTitleFromTimestamp(apiRes.created) // 更新時間戳為當前時間
+            lastUpdateTime: this.generateTitleFromTimestamp(creatTimestamp)     // 更新時間戳為當前時間
           };
 
           return updataSingleThreadData;
@@ -423,10 +466,10 @@ export class ChatComponent {
       let threadData: ChatHistoryCahce = {
         threadId: this.generateNewUUID(),
         tabSortIdx: 0,// ====後續再思考怎麼調整
-        title: this.generateTitleFromTimestamp(apiRes.created),
+        title: this.generateTitleFromTimestamp(creatTimestamp),
         msgContents: queAndAnsMsgContent,
-        createTime: this.generateTitleFromTimestamp(apiRes.created),
-        lastUpdateTime: this.generateTitleFromTimestamp(apiRes.created)
+        createTime: this.generateTitleFromTimestamp(creatTimestamp),
+        lastUpdateTime: this.generateTitleFromTimestamp(creatTimestamp)
       };
 
       // 更新畫面資料
@@ -493,18 +536,22 @@ export class ChatComponent {
     this._gptService.getModelAnsFromOpenAI(para).subscribe(async res => {
       console.log('getGptAnswer', res);
 
-      const managedChatApiRes = await this.processChatApiRes(res.choices[res.choices.length - 1].message.content);
-      const answerMsgContent: ChatSingleCoversation = {
-        role: 'system',
-        content: managedChatApiRes
-      };
-      console.log('highlightedResponse', managedChatApiRes);
+      // 整理文字排版
+      const manageFormatWords = this.formatResponse(res.choices[res.choices.length - 1].message.content);
+      // const manageFormatWords = this.formatResponse(this.fakeApiRes2.exampleApiResText);
+
+      // 處理高亮語法
+      const manageHightlightCode = await this.processChatApiRes(manageFormatWords);
 
       // 更新當前視窗畫面、資料
+      const answerMsgContent: ChatSingleCoversation = {
+        role: 'system',
+        content: manageHightlightCode
+      };
       this.currentThreadData!.msgContents.push(answerMsgContent);
 
       // 存到暫存
-      this.saveToCahce(res, [questionMsgContent, answerMsgContent]);
+      this.saveToCahce(res.created, [questionMsgContent, answerMsgContent]);
 
       this._changeDetectorRef.detectChanges();
       this._uiBlockService.removeBlockUI();
@@ -512,8 +559,19 @@ export class ChatComponent {
   }
 
 
-
   fakeApiRes = {
+    title: "假資料標題",
+    exampleApiResText: "不用下載程式碼即可使用：[MyAI線上版](https://chiawen81.github.io/MyAI/user/chat/index)\n\n#### 測試h4\n### 測試h3\n## 測試h2\n# 測試h1\n~~非常棒~~\nMarkdown 是一種輕量級的標記語言，常用於格式化文本。以下是一些常用的 Markdown 語法：\n\n1. **標題**：\n   - 使用 `#` 表示標題，`#` 的數量表示標題的層級。\n     ```\n     # 一級標題\n     ## 二級標題\n     ### 級標題\n     ```\n\n2. **粗體**：\n   - 使用 `**` 或 `__` 包圍文字。\n ~~非常棒~~\n    ```\n     **粗體文字**\n     __粗體文字__\n     ```\n\n#### 測試h4\n這裡是一段文字\n### 測試h3\n這裡是一段文字\n## 測試h2\n這裡是一段文字\n# 測試h1\n這裡是一段文字\n\n3. **斜體**：\n   - 使用 `*` 或 `_` 包圍文字。\n     ```\n     *斜體文字*\n     _斜體文字_\n     ```\n\n4. **刪除線**：\n   - 使用 `~~` 包圍文字。\n     ```\n     ~~刪除線文字~~\n     ```\n\n5. **清單**：\n   - 無序清單使用 `*`、`+` 或 `-`。\n     ```\n     * 項目一\n     * 項目二\n     ```\n   - 有序清單使用數字加上 `.`。\n     ```\n     1. 第一項\n     2. 第二項\n     ```\n\n6. **連結**：\n   - 使用 `[顯示文字](網址)`。\n     ```\n     [Google](https://www.google.com)\n     ```\n\n7. **圖片**：\n   - 使用 `![替代文字](圖片網址)`。\n     ```\n     ![示例圖片](https://example.com/image.jpg)\n     ```\n\n8. **引用**：\n   - 使用 `>`。\n     ```\n     > 這是一個引用\n     ```\n\n"
+  };
+
+
+  fakeApiRes2 = {
+    title: "假資料標題",
+    exampleApiResText: "Angular 是一個流行的前端框架，用於構建動態的單頁應用程式（SPA）。在 Angular 中，Component 是構建應用程式的基本單位。每個 Component 都包含了 HTML 模板、CSS 樣式和 TypeScript 類，這些組成部分共同定義了應用程式的視圖和行為。\n\n### 如何使用 Angular Component\n\n1. **創建 Component**:\n- 使用 Angular CLI 創建 Component 是最簡單的方法。你可以使用以下命令：\n ```bash\nng generate component component-name\n```\n- 這將創建一個新的目錄，包含四個文件：`component-name.component.ts`、`component-name.component.html`、`component-name.component.css` 和 `component-name.component.spec.ts`。\n\n2. **Component 類**:\n- 在 `component-name.component.ts` 文件中，Component 類使用 `@Component` 裝飾器來定義。這個裝飾器包含了元數據，用於描述 Component 的行為。\n- 例如：\n```typescript\nimport { Component } from '@angular/core';\n\n@Component({\n  selector: 'app-component-name',\n  templateUrl: './component-name.component.html',\n  styleUrls: ['./component-name.component.css']\n})\nexport class ComponentNameComponent {\n  // Component 的邏輯\n}\n```\n\n3. **模板和樣式**:\n- `templateUrl` 指定了 HTML 模板的路徑，這是 Component 的視圖。\n- `styleUrls` 是一個數組，包含了 CSS 樣式的路徑。\n\n4. **使用 Component**:\n- 在其他模板中使用 Component 時，可以使用 `selector` 屬性中定義的選擇器。\n- 例如，在 `app.component.html` 中使用：\n```html\n<app-component-name></app-component-name>\n```\n\n### Component 的屬性\n\n1. **selector**:\n- 定義了 Component 的選擇器，這是用於在模板中插入 Component 的標籤。\n\n2. **templateUrl / template**:\n- `templateUrl` 是指向外部 HTML 文件的路徑。\n- `template` 是內聯 HTML 字符串。\n\n3. **styleUrls / styles**:\n- `styleUrls` 是一個數組，包含了外部 CSS 文件的路徑。\n- `styles` 是內聯 CSS 字符串數組。\n\n4. **providers**:\n- 用於定義在這個 Component 中可用的服務。\n\n5. **animations**:\n- 定義了這個 Component 中使用的動畫。\n\n6. **changeDetection**:\n- 設置變更檢測策略，默認是 `ChangeDetectionStrategy.Default`。\n\n7. **encapsulation**:\n- 定義樣式封裝策略，選項包括 `ViewEncapsulation.Emulated`（默認）、`ViewEncapsulation.None` 和 `ViewEncapsulation.ShadowDom`。\n\n8. **inputs / outputs**:\n- `inputs` 定義了可以從父 Component 傳入的屬性。\n- `outputs` 定義了可以向父 Component 發送的事件。\n\n這些屬性和功能使得 Angular Component 成為構建複雜應用程式的強大工具。通過組合和重用 Component，你可以創建結構良好且可維護的應用程式。"
+  };
+
+
+  fakeApiRes3 = {
     title: "假資料標題",
     exampleApiResText: "在Angular中，依賴注入（Dependency Injection，簡稱DI）是一個核心概念，用於提供或\"注入\"組件和服務之間的依賴關係。Angular的依賴注入系統會為你提供所需的依賴項，例如服務或其他類別。\n\n要使用Angular的依賴注入系統，你通常會經歷以下步驟：\n\n1. **定義一個服務（Service）**：首先，建立一個服務類別，該類別包含你想要在應用程序中的其他部分使用的方法和屬性。\n\n```typescript\nimport { Injectable } from '@angular/core';\n\n@Injectable({\n  providedIn: 'root' // 這個服務是全域單例\n})\nexport class MyService {\n  constructor() {}\n\n  doSomething() {\n    // 這裡是你的邏輯\n  }\n}\n```\n\n2. **注入服務到組件（Component）或其他服務中**：在組件或其他服務的建構函數中，通過參數列表來注入先前定義的服務。\n\n```typescript\nimport { Component } from '@angular/core';\nimport { MyService } from './my.service';\n\n@Component({\n  selector: 'app-my-component',\n  templateUrl: './my-component.component.html',\n  styleUrls: ['./my-component.component.css']\n})\nexport class MyComponent {\n  // MyService 會被Angular DI系統自動注入到這個組件中\n  constructor(private myService: MyService) {}\n\n  useService() {\n    // 使用注入的服務\n    this.myService.doSomething();\n  }\n}\n```\n\n在上面的程式碼中，`MyService` 是透過 `MyComponent` 的建構函數注入的。Angular會自動創建`MyService`的實例（如果尚未創建），並將其作為參數傳遞給組件的建構函數。\n\n這樣，你就可以在組件中使用`myService`實例來調用`doSomething`方法或其他方法。\n\n請注意，為了讓服務可以被注入，你必須在Angular模組中註冊它。在上面`@Injectable()`裝飾器中使用`providedIn: 'root'`，表示該服務是全局單例，它會自動註冊到根注入器中，這意味著你不需要在任何NgModule的`providers`陣列中再次註冊它。如果你希望將服務限制在特定模組或組件中使用，則可以在相應的NgModule或@Component的`providers`陣列中註冊該服務。\n\n這就是Angular依賴注入系統的基本用法。透過這種方式，Angular幫助我們保持組件和服務之間的解耦，並提高了代碼的可測試性和可維護性。"
   };
