@@ -49,7 +49,7 @@ export class ChatComponent {
   async ngOnInit(): Promise<void> {
     // 程式碼版- 高亮語法的初始設定
     this.highlighter = await this._shikiService.initShiki(
-      [this.defaultCodeBoardLanguaged, 'bash', 'html', 'css', 'javascript'],
+      [this.defaultCodeBoardLanguaged, 'bash', 'html', 'css', 'javascript', 'python'],
       ["github-dark"]
     );
   }
