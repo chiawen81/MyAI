@@ -18,10 +18,7 @@ import { UiBlockService } from '../../../services/block-ui.service';
     MatProgressSpinnerModule
   ],
   templateUrl: './chat.component.html',
-  styleUrls: [
-    './chat.component.scss',
-    // './../../../../../../../node_modules/@angular/material/prebuilt-themes/cyan-orange.css'
-  ],
+  styleUrl: './chat.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatComponent {
