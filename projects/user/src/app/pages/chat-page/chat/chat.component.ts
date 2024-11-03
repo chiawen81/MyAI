@@ -379,6 +379,9 @@ export class ChatComponent {
           // 按下enter，但沒有按住 Shift 鍵
           this.sendMessage();                 // 送出訊息
 
+          // 還原高度
+          inputElement.style.height = "auto";
+
         } else {
           // 處理 Shift+Enter，僅當輸入框高度小於 250px 時增加高度
           const currentHeight = inputElement.offsetHeight;

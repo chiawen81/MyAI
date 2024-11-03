@@ -71,6 +71,12 @@ body {
             align-items: center;
             padding: 5px;
             cursor: pointer;
+
+            .chat-tab {
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
           }
         }
       }
@@ -105,6 +111,22 @@ body {
 
       &.sidebarClose {
         // justify-content: flex-end;
+      }
+
+      // 組合按鈕(左側欄收合時顯示)
+      .top-bar-buttons {
+        display: flex;
+        align-items: center;
+      }
+
+      .thread-title {
+        .new-title {
+          height: 30px;
+          width: 200px;
+          border-radius: 4px;
+          padding: 5px;
+          border: 1px solid #e4e4e4;
+        }
       }
 
       .dropdown {
@@ -148,12 +170,6 @@ body {
         .show {
           display: block;
         }
-      }
-
-      // 組合按鈕(左側欄收合時顯示)
-      .top-bar-buttons {
-        display: flex;
-        align-items: center;
       }
     }
 

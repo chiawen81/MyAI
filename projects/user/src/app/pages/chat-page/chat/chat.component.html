@@ -14,7 +14,7 @@
       <div class="chat-list-container">
         <div class="chat-list">
           <div class="chat-item" *ngFor="let thread of myAIChatData">
-            <span (click)="checkHistoryThread(thread)">{{ thread.title }}</span>
+            <span class="chat-tab" (click)="checkHistoryThread(thread)">{{ thread.title }}</span>
             <div>
               <i class="fas fa-trash cursor" (click)="deleteThread(thread)"></i>
             </div>
@@ -50,7 +50,7 @@
             <i class="fas fa-pen cursor m-l-10" (click)="renameTitle()"></i>
           </div>
           <div *ngIf="isOpenRenameTitle">
-            <input type="text" [formControl]="newTitle">
+            <input class="new-title" type="text" [formControl]="newTitle" placeholder="標題建議10字內">
             <i class="fas fa-check cursor m-l-10" (click)="createNewTitle(newTitle['value']!)"></i>
           </div>
         </ng-container>
