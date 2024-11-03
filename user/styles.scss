@@ -12,67 +12,19 @@ body {
 // 對話串 動態生成的內容樣式
 // NOTE:動態生成的樣式設定需放在全域
 .message-content {
-  .innerHTML-code-inline-text {
-    background: #ffffff;
-    border-radius: .25rem;
-    color: #017bff;
-    font-size: .875em;
-    font-weight: 500;
-    padding: .15rem .3rem;
+
+  /* 行內程式碼樣式 */
+  :not(pre)>code {
+    background-color: #f4f4f4;
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 0.95em;
+    color: #d63384;
+    font-family: 'Courier New', Courier, monospace;
   }
 
-  .innerHTML-h1 {
-    font-weight: 700;
-    letter-spacing: -.04rem;
-  }
-
-  .innerHTML-h2 {
-    font-weight: 600;
-    margin-bottom: 1rem;
-    margin-top: 2rem;
-  }
-
-  .innerHTML-h3 {
-    font-weight: 600;
-    margin-bottom: .5rem;
-    margin-top: 1.5rem;
-  }
-
-  .innerHTML-h4 {
-    font-weight: 600;
-    margin-bottom: .5rem;
-    margin-top: 1rem;
-  }
-
-  // ====待處理：有序列表、無序列表
-  // 無序列表
-  .innerHTML-list {
-    //
-    list-style-type: disc;
-    padding-left: 1.625em;
-    margin-bottom: 0.75em;
-    margin-top: 0;
-
-    li {
-      padding-left: .375em;
-    }
-
-    // NOTE:無序排列SCSS設定
-  }
-
-  // 有序排列
-  .ordered-list-item {
-    margin-top: 1.5em;
-    margin-bottom: 0.25em;
-    font-weight: bold;
-    // NOTE:有序排列的小標加工
-  }
-
-  h1.innerHTML-h1+p.ordered-list-item,
-  h2.innerHTML-h2+p.ordered-list-item,
-  h3.innerHTML-h3+p.ordered-list-item,
-  h4.innerHTML-h4+p.ordered-list-item {
-    margin-top: 0.5em;
-    // NOTE:與大標相鄰的p段落，另行設定 margin-top（距離較短）
+  /* 列表間距 */
+  li {
+    margin-bottom: 5px;
   }
 }
