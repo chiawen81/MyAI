@@ -22,6 +22,7 @@ export class UiBlockService {
     }
   }
 
+
   // 關閉 UI Block
   removeBlockUI(): void {
     if (this.dialogRef) {

@@ -6,7 +6,6 @@ import { Highlighter } from 'shiki';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ChatHistoryCahce, ChatSingleCoversation } from '../../../interfaces';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDialog } from '@angular/material/dialog';
 import { GptService } from '../../../services/gpt.service';
 import { UiBlockService } from '../../../services/block-ui.service';
 import { MarkdownModule, MarkdownService } from 'ngx-markdown';
@@ -25,7 +24,6 @@ import { MarkdownModule, MarkdownService } from 'ngx-markdown';
 export class ChatComponent {
   @ViewChild('userMenu') userMenu!: ElementRef;
   @ViewChild('sidebar') sidebar!: ElementRef;
-  // @ViewChild('textInput', { static: true }) textInputRef!: ElementRef; // 準備棄用====
 
   myAIChatData: ChatHistoryCahce[] = [];                                      // 資料- 全
   currentThreadData: ChatHistoryCahce | any = undefined;                      // 資料- 當前頁籤訊息
@@ -41,7 +39,6 @@ export class ChatComponent {
     private _shikiService: ShikiService,
     private _gptService: GptService,
     private _sanitizer: DomSanitizer,
-    private _dialog: MatDialog,
     private _uiBlockService: UiBlockService,
     private _changeDetectorRef: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -143,21 +140,6 @@ export class ChatComponent {
   toggleUserMenu(): void {
     console.log('toggleUserMenu');
     this.userMenu.nativeElement.classList.toggle('show');
-  }
-
-
-  // 置頂橫幅- 關閉選單(右上)  // 待確認==== 這個方法沒用到ＸＤ
-  closeDropdowns(event: any): void {
-    console.log('closeDropdowns');
-    if (!event.target.matches('.user-avatar')) {
-      let dropdowns = document.getElementsByClassName("dropdown-content");
-      for (let i = 0; i < dropdowns.length; i++) {
-        let openDropdown = dropdowns[i];
-        if (openDropdown.classList.contains('show')) {
-          openDropdown.classList.remove('show');
-        }
-      }
-    }
   }
 
 
