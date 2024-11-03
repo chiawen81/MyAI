@@ -1,6 +1,6 @@
 {
   "name": "my-ai",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -33,6 +33,7 @@
     "angular-cli-ghpages": "^2.0.3",
     "express": "^4.18.2",
     "git-filter-repo": "^0.0.30",
+    "ngx-markdown": "^18.1.0",
     "rxjs": "~7.8.0",
     "shiki": "^1.11.1",
     "tslib": "^2.3.0",

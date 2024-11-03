@@ -9,13 +9,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog } from '@angular/material/dialog';
 import { GptService } from '../../../services/gpt.service';
 import { UiBlockService } from '../../../services/block-ui.service';
+import { MarkdownModule, MarkdownService } from 'ngx-markdown';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, FormsModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule, MarkdownModule
   ],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss',
@@ -43,7 +44,8 @@ export class ChatComponent {
     private _dialog: MatDialog,
     private _uiBlockService: UiBlockService,
     private _changeDetectorRef: ChangeDetectorRef,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private _markdownService: MarkdownService
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -191,8 +193,8 @@ export class ChatComponent {
 
 
   // ———————————————————————————— 對話串 ————————————————————————————
-  // 程式版- 挑出程式碼段落處理
-  async processChatApiRes(ApiRes: string): Promise<string> {
+  // 排版- 處理文字排版、程式碼高亮語法
+  async formatGptApiRes(ApiRes: string): Promise<string> {
     const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;       // 正則：全段內容、所用語言、程式碼段落
     const allCodeBlockMatch = ApiRes.matchAll(codeBlockRegex);// 程式碼段落- 所有匹配到的程式碼段落
     let afterFormattedRes = '';                               // 處理後的最終內容
@@ -203,8 +205,10 @@ export class ChatComponent {
       let [fullMatch, language, code] = match;                // 正則匹配到的全段內容、所用語言、程式碼段落
       language = language || this.defaultCodeBoardLanguaged;  // 無匹配到語言則用預設程式語言(TS)
 
-      // 加入普通文字
-      afterFormattedRes += ApiRes.slice(textIndex, match.index);
+      // 加入轉譯後的文字
+      afterFormattedRes += this._markdownService.parse(
+        ApiRes.slice(textIndex, match.index)
+      );
       // NOTE:範圍是上次匹配到的程式碼結束位置，到這次匹配到的程式碼開始位置
 
       // 加入高亮後的程式碼
@@ -215,8 +219,10 @@ export class ChatComponent {
       // NOTE: lastIndex 為當前匹配結束的位置，以備下次切割普通文字
     };
 
-    // 加入最後的普通文字
-    afterFormattedRes += ApiRes.slice(textIndex);
+    // 加入最後的轉譯文字
+    afterFormattedRes += this._markdownService.parse(
+      ApiRes.slice(textIndex)
+    );
     // NOTE:匹配到最後的程式碼段落，其後的普通文字
 
     return afterFormattedRes;
@@ -296,52 +302,9 @@ export class ChatComponent {
   // 程式版- 複製成功
   copySuccess(code: string) {
     navigator.clipboard.writeText(code).then(() => {
-      alert('Code copied to clipboard!');
+      alert('複製成功!');
     });
   }
-
-
-
-  // 排版- 整理排版
-  formatResponse(gptResponse: string): string {
-    // 暫時將所有以三個反引號包圍的程式碼區塊替換為佔位符
-    const codeBlocks: string[] = [];
-    const tempContent = gptResponse.replace(/```([\s\S]*?)```/g, (match) => {
-      codeBlocks.push(match);  // 保留原始的 Markdown 格式
-      return `<!-- CODE_BLOCK_${codeBlocks.length - 1} -->`;
-    });
-
-    console.log('codeBlocks:', codeBlocks);
-
-    // 執行其他格式替換（不影響程式碼區塊）
-    let formattedContent = JSON.parse(JSON.stringify(tempContent))
-      .replace(/`(.*?)`/g, '<code class="innerHTML-code-inline-text">$1</code>') // 行內程式碼
-      .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // 加粗文字，比對目標：**
-      .replace(/(?<!<code[^>]*?>)(?<!<pre[^>]*?>)\*(.*?)\*(?!<\/code>|<\/pre>)/g, '<i>$1</i>')
-      // .replace(/(?<!CODE_BLOCK_\d)_([^_]+)_/g, '<i>$1</i>') // 斜體 (底線) - 排除佔位符
-      .replace(/~~(.*?)~~/g, '<s>$1</s>') // 刪除線
-      .replace(/#### (.*?)\n/g, '<h4 class="innerHTML-h4">$1</h4>') // h4 標題
-      .replace(/### (.*?)\n/g, '<h3 class="innerHTML-h3">$1</h3>') // h3 標題
-      .replace(/## (.*?)\n/g, '<h2 class="innerHTML-h2">$1</h2>') // h2 標題
-      .replace(/# (.*?)\n/g, '<h1 class="innerHTML-h1">$1</h1>') // h1 標題
-      .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2">$1</a>') // 超連結
-      .replace(/^- (.*?)$/gm, '<ul class="innerHTML-list"><li>$1</li></ul>') // 無序列表
-      .replace(/^\d+\.\s+(.*?)(?=\n|$)/gm, '<p class="ordered-list-item">$&</p>');// 有序列表的小標加margin-top
-    // .replace(/(?<!<code|<pre>)\n/g, '<br />') // 只替換非程式碼區塊的換行
-    // .replace(/(.+?)(?=\n|$)/g, '<p>$1</p>'); // 段落分隔
-
-    console.log('formattedContent', formattedContent);
-    console.log('比對', formattedContent.includes('<!-- CODE_BLOCK_0 -->'));
-
-    // 將程式碼區塊還原為原始 Markdown 字串
-    codeBlocks.forEach((block, index) => {
-      formattedContent = formattedContent.replace(`<!-- CODE_BLOCK_${index} -->`, block);
-    });
-
-    return formattedContent;
-  }
-
-
 
 
 
@@ -539,17 +502,14 @@ export class ChatComponent {
     this._gptService.getModelAnsFromOpenAI(para).subscribe(async res => {
       console.log('getGptAnswer', res);
 
-      // 整理文字排版
-      const manageFormatWords = this.formatResponse(res.choices[res.choices.length - 1].message.content);
-      // const manageFormatWords = this.formatResponse(this.fakeApiRes2.exampleApiResText);
-
-      // 處理高亮語法
-      const manageHightlightCode = await this.processChatApiRes(manageFormatWords);
+      // 處理文字排版、高亮語法
+      const afterFormat = await this.formatGptApiRes(res.choices[res.choices.length - 1].message.content);
+      console.log('afterFormat ', afterFormat);
 
       // 更新當前視窗畫面、資料
       const answerMsgContent: ChatSingleCoversation = {
         role: 'system',
-        content: manageHightlightCode
+        content: afterFormat
       };
       this.currentThreadData!.msgContents.push(answerMsgContent);
 
