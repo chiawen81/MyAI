@@ -28,3 +28,14 @@ body {
     margin-bottom: 5px;
   }
 }
+
+
+
+// ———————————————————— 彈窗 ————————————————————
+// 調整背景色
+.mat-mdc-dialog-content.mdc-dialog__content,
+.mat-mdc-dialog-title.mdc-dialog__title,
+.mat-mdc-dialog-actions.mdc-dialog__actions {
+  background-color: white;
+  color: black;
+}
