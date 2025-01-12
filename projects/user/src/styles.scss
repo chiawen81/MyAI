@@ -8,23 +8,3 @@ body {
   display: flex;
   height: 100vh;
 }
-
-// 對話串 動態生成的內容樣式
-// NOTE:動態生成的樣式設定需放在全域
-.message-content {
-
-  /* 行內程式碼樣式 */
-  :not(pre)>code {
-    background-color: #f4f4f4;
-    border-radius: 4px;
-    padding: 2px 4px;
-    font-size: 0.95em;
-    color: #d63384;
-    font-family: 'Courier New', Courier, monospace;
-  }
-
-  /* 列表間距 */
-  li {
-    margin-bottom: 5px;
-  }
-}
