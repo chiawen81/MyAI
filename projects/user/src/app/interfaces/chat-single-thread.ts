@@ -3,5 +3,5 @@ export interface ChatSingleCoversation {
   content: string,
 
   /* 身份別 */
-  sender: string,
+  role: string,
 }

@@ -3,11 +3,23 @@
 
 <head>
   <meta charset="utf-8">
-  <title>User</title>
+  <title>MyAI</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" href="assets/cyan-orange.css">
+  <link rel="stylesheet" class="update-styles-scss">
+  <script>
+    // ============= 倒轉SPA路由 ============
+    (function () {
+      var redirect = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      if (redirect && redirect != location.href) {
+        history.replaceState(null, null, redirect);
+      }
+    })();
+  </script>
 </head>
 
 <body>

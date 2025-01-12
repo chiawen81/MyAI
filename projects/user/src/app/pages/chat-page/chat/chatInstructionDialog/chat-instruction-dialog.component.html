@@ -1,0 +1,17 @@
+<div class="cus-intruction-wrapper">
+  <h2 mat-dialog-title>自訂指令（Custom Instruction）</h2>
+  <div mat-dialog-content>
+    <p class="notice-text">設定與AI對話時的固定指令，這些指令會在每次對話時自動加入。</p>
+    <div class="input-area">
+      <textarea
+                placeholder="輸入您的訊息..."
+                rows="4"
+                id="user-input"
+                [formControl]="instructionText"></textarea>
+    </div>
+  </div>
+  <div mat-dialog-actions>
+    <button mat-button mat-dialog-close>取消</button>
+    <button mat-raised-button color="primary" (click)="saveInstruction()">儲存</button>
+  </div>
+</div>

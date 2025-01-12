@@ -1,0 +1,64 @@
+.cus-intruction-wrapper {
+  .mat-mdc-dialog-title.mdc-dialog__title {
+    background-color: #000000;
+    color: white;
+  }
+
+  .notice-text {
+    color: rgb(0, 0, 0);
+    margin: 16px 0;
+  }
+
+  // ————— 輸入框 —————
+  .input-area {
+    display: flex;
+    align-items: center;
+    min-height: 20px;
+    max-height: 290px;
+    overflow-y: auto;
+    resize: none;
+    height: auto;
+
+    #user-input {
+      height: auto;
+      min-height: 20px; // 設置一個最小高度
+      max-height: 250px; // 最大高度為 250px
+      overflow-y: auto; // 超過最大高度時允許滾動
+      resize: none; // 禁止手動調整大小
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+  }
+
+
+  // ————— 按鈕 —————
+  button.mdc-button.mdc-button--raised.mat-mdc-raised-button.mat-primary.mat-mdc-button-base {
+    background: #007bff;
+    color: white;
+  }
+
+  button.mdc-button.mat-mdc-button.mat-unthemed.mat-mdc-button-base {
+    color: #007bff;
+    border: 1px solid #007bff;
+
+    &:hover {
+      background: #a0ceff;
+      color: white;
+    }
+  }
+
+  .mat-dialog-actions {
+
+    .mat-mdc-raised-button,
+    .mat-mdc-raised-button .mdc-button__ripple {
+      background: blue;
+    }
+
+    button.mat-primary {
+      background-color: #1976d2; // Material Design 的標準藍色
+      color: white;
+    }
+  }
+}

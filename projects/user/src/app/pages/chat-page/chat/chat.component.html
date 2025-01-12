@@ -1,51 +1,90 @@
 <div class="container">
   <aside class="sidebar" #sidebar id="sidebar" [class.sidebarOpen]="isSidebarOpen" [class.sidebarClose]="!isSidebarOpen">
+
+    <!--—————————————————————————————— 左側欄 ——————————————————————————————-->
     <div class="toggle-transition-box" [class.sidebarClose]="!isSidebarOpen">
+      <!-- 切換左側選單開合（目前為開） -->
       <div class="sidebar-header">
         <button class="sidebar-button" (click)="toggleSidebar()"><i class="fas fa-exchange-alt"></i></button>
         <button class="sidebar-button" (click)="addNewChat()"><i class="fas fa-plus"></i></button>
       </div>
+
+
+      <!--———————————————— 左選單 ————————————————-->
       <div class="chat-list-container">
         <div class="chat-list">
-          <div class="chat-item" *ngFor="let thread of myAIChatData" (click)="checkHistoryThread(thread)">{{ thread.title }}</div>
+          <div class="chat-item" *ngFor="let thread of myAIChatData">
+            <span class="chat-tab" (click)="checkHistoryThread(thread)">{{ thread.title }}</span>
+            <div>
+              <i class="fas fa-trash cursor" (click)="deleteThread(thread)"></i>
+            </div>
+          </div>
         </div>
       </div>
+
+
+      <!--———————————————— 底部選單 ————————————————-->
       <div class="sidebar-footer">
         底部區域
       </div>
     </div>
-
   </aside>
+
+
+
+  <!--—————————————————————————————— 主內容 ——————————————————————————————-->
   <div class="main-content">
+    <!--———————————————— 置頂橫幅 ————————————————-->
     <div class="top-bar" [class.sidebarClose]="!isSidebarOpen">
+      <!-- 切換左側選單開合（目前為關）  -->
       <div class="top-bar-buttons" *ngIf="!isSidebarOpen">
         <button class="sidebar-button" (click)="toggleSidebar()"><i class="fas fa-exchange-alt"></i></button>
         <button class="sidebar-button" (click)="addNewChat()"><i class="fas fa-plus"></i></button>
       </div>
+
+      <!-- 標題 -->
+      <div class="thread-title">
+        <ng-container *ngIf="currentThreadData?.title">
+          <div *ngIf="!isOpenRenameTitle">
+            <span>{{currentThreadData.title}}</span>
+            <i class="fas fa-pen cursor m-l-10" (click)="renameTitle()"></i>
+          </div>
+          <div *ngIf="isOpenRenameTitle">
+            <input class="new-title" type="text" [formControl]="newTitle" placeholder="標題建議10字內">
+            <i class="fas fa-check cursor m-l-10" (click)="createNewTitle(newTitle['value']!)"></i>
+          </div>
+        </ng-container>
+      </div>
+
       <div class="dropdown" (click)="toggleUserMenu()">
+        <!-- 頭像 -->
         <div class="user-avatar" #userAvatar id="user-avatar">
           <i class="fas fa-user"></i>
         </div>
+
+        <!-- 頭像選單 -->
         <div class="dropdown-content" #userMenu id="user-menu">
           <a href="#">首頁</a>
-          <a href="#">設定</a>
+          <a href="javascript:;" (click)="openCusInstructionDialog()">自訂指令</a>
           <a href="#">查看用量</a>
           <a href="#">登入</a>
         </div>
       </div>
     </div>
+
+
+    <!--———————————————— 對話串 ————————————————-->
     <div class="chat-container" [class.sidebarClose]="!isSidebarOpen">
+      <!-- 過往訊息 -->
       <div class="chat-messages">
         @if(currentThreadData?.msgContents?.length){
-        <div class="message" *ngFor="let message of currentThreadData!.msgContents" [ngClass]="{'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot'}">
-          <div class="avatar" *ngIf="message.sender === 'bot'">
-            <i class="fas fa-robot"></i>
-          </div>
+        <div class="message" *ngFor="let message of currentThreadData!.msgContents" [ngClass]="{'user-message': message.role === 'user', 'system-message': message.role === 'system'}">
           <div class="message-content" [innerHTML]="getSanitizedHtml(message.content)"></div>
         </div>
         }
-
       </div>
+
+      <!-- 輸入框 -->
       <div class="input-area">
         <textarea
                   placeholder="輸入您的訊息..."
@@ -57,6 +96,7 @@
                   (keydown)="onEnterPress($event)"></textarea>
         <button id="send-button" (click)="sendMessage()">發送</button>
       </div>
+
     </div>
   </div>
 </div>
